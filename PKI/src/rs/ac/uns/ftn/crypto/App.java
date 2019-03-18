@@ -1,14 +1,25 @@
 package rs.ac.uns.ftn.crypto;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.Security;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Scanner;
 
 import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import rs.ac.uns.ftn.crypto.cerificates.CertificateGenerator;
@@ -18,31 +29,38 @@ import rs.ac.uns.ftn.crypto.data.SubjectData;
 import rs.ac.uns.ftn.crypto.keystore.KeyStoreMenager;
 
 public class App {
-
-	public static void main(String[] args){
+	private static final String REVOKE_FILE = "revokedCertificates";
+	private static final String REVOKE_FILE_PASS = "123";
+	private KeyStoreMenager ksMenager;
+	public App(){
+		ksMenager = new KeyStoreMenager();
+	}
+	public static void main(String[] args) throws CertificateEncodingException{
 		Security.addProvider(new BouncyCastleProvider());
 		Scanner sc = new Scanner(System.in);
 		System.out.println("===== Konzolna aplikacija za upravljanje sertifikatima i kljucevima =====");
 		Scanner keyboard = new Scanner(System.in);
+		App PKI = new App();
 		int choice = 0;
 		do {
 			menu();
 			choice = keyboard.nextInt();
 			switch(choice) {
 			case 1: {
-				addNewCertificate(sc);
+				PKI.addNewCertificate(sc);
 				break;
 			}
 			case 2: {
-				//showKeyStoreContent();
+
+				PKI.revokeCertificate(sc);
 				break;
 			}
 			case 3: {
-				//createNewSelfSignedCertificate();
+				PKI.showKeyStoreContent("certificates", "123");
 				break;
 			}
 			case 4: {
-				//createNewIssuedCertificate();
+				PKI.showKeyStoreContent("revokedCertificates", "123");
 				break;
 			}
 			}
@@ -52,17 +70,14 @@ public class App {
 	
 		
 	}
-	public static void addNewCertificate(Scanner sc){
-		KeyStoreMenager ksMenager = new KeyStoreMenager();
-		//ksMenager.createKeyStore("certificates","123");
+	public void addNewCertificate(Scanner sc){
+		//ksMenager.createKeyStore("revokedCertificates","123");
 		ksMenager.loadKeySotre("certificates", "123");
 		try {
 			ksMenager.generateCertificates();
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		
-		
 		CertificateGenerator cg = new CertificateGenerator();
 
 		SubjectData sd = CertificateUtils.enterSubjectData(sc);
@@ -90,12 +105,59 @@ public class App {
 			System.out.println("neuspesno dodavanje sertifikata.");
 		}
 	}
+	public void showKeyStoreContent(String fileName, String password){
+		KeyStoreMenager ksMenager = new KeyStoreMenager();
+		ksMenager.loadKeySotre(fileName, password);
+		//ksMenager.loadKeySotre("certificates", "123");
+
+		Enumeration<String> aliasesNum = null;
+		
+		aliasesNum = ksMenager.aliases();
+		System.out.println("========================================");
+		while(aliasesNum.hasMoreElements()){
+			String alias = aliasesNum.nextElement();
+			X509Certificate cert =	ksMenager.readCertificate("certificates", "123", alias);
+			System.out.println("      Subject name: " + cert.getSubjectX500Principal().getName());
+			System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
+			System.out.println("========================================");
+
+		}
+	}
+	public void revokeCertificate(Scanner sc) throws CertificateEncodingException{
+		ksMenager.loadKeySotre("certificates", "123");
+		X509Certificate certToRevoke = CertificateUtils.ChoseCert(sc);
+		Enumeration<String> aliasesNum = ksMenager.aliases();
+		ArrayList<X509Certificate> certsToRevoke = new ArrayList<>();
+		while(aliasesNum.hasMoreElements()){
+			String alias = aliasesNum.nextElement();
+			Certificate[] certChain = ksMenager.getCertificateChain(alias);
+			for (Certificate c : certChain){
+				
+				if (((X509Certificate)c).getSerialNumber().equals(certToRevoke.getSerialNumber())){
+					certsToRevoke.add(ksMenager.readCertificate("certificates", "123", alias));
+				}
+			}
+		}
+
+		for (X509Certificate cert : certsToRevoke){
+			X500Name x500name = new JcaX509CertificateHolder(cert).getSubject();
+			RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+			
+			String commonName = IETFUtils.valueToString(cn.getFirst().getValue());
+			
+			PrivateKey subjectPK = ksMenager.getKey(commonName, commonName, "certificates", "123");
+			ksMenager.addCertificate(commonName, subjectPK,  commonName.toCharArray(), new Certificate[]{cert}, "revokedCertificates", "123");
+
+		}
+		
+		
+	}
 	private static void menu() {
-		System.out.println("==================================");
+		System.out.println("========================================");
 		System.out.println("1.	Dodaj nov sertifikat");
-		System.out.println("2.	Show key store content");
-		System.out.println("3.	Create new self signed certificate");
-		System.out.println("4.	Create new issued certificate");
+		System.out.println("2.	Povuci sertifikat");
+		System.out.println("3.	Prikazi sve sertifikate");
+		System.out.println("4.	Prikazi povucene sertifikate");
 		System.out.println("5.	Exit");
 		System.out.print(">>>");
 	}

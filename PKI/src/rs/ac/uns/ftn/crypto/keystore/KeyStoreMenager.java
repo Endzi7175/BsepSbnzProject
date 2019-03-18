@@ -10,22 +10,22 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
 
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
 import rs.ac.uns.ftn.crypto.cerificates.CertificateGenerator;
 import rs.ac.uns.ftn.crypto.cerificates.CertificateUtils;
@@ -76,6 +76,7 @@ public class KeyStoreMenager {
 	}
 	public void addCertificate(String alias, PrivateKey privateKey, char[] password, Certificate[] certChain, String keyStoreName, String keyStorePass){
 		try {
+			keyStore.load(new FileInputStream("files/" + keyStoreName + ".jks"), keyStorePass.toCharArray());
 			//dodaj sertifikat
 			keyStore.setKeyEntry(alias, privateKey, password, certChain);
 			//upisi u fajl
@@ -156,8 +157,9 @@ public class KeyStoreMenager {
 		}
 		return null;
 	}
-	public PrivateKey getKey(String alias, String password){
+	public PrivateKey getKey(String alias, String password, String fileName, String pass){
 		try {
+			keyStore.load(new FileInputStream("files/" + fileName + ".jks"),pass.toCharArray());
 			return (PrivateKey) keyStore.getKey(alias, password.toCharArray());
 		} catch (UnrecoverableKeyException e) {
 			e.printStackTrace();
@@ -165,8 +167,44 @@ public class KeyStoreMenager {
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
+		} catch (CertificateException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return null;
+	}
+	public boolean isRevoked(X509Certificate certificate){
+		try {
+			X500Name x500name = null;
+			try {
+				x500name = new JcaX509CertificateHolder(certificate).getSubject();
+			} catch (CertificateEncodingException e) {
+				e.printStackTrace();
+			}
+			RDN cn = x500name.getRDNs(BCStyle.CN)[0];
+			String commonName = IETFUtils.valueToString(cn.getFirst().getValue());
+			keyStore.load(new FileInputStream("files/revokedCertificates.jks"), new String("123").toCharArray());
+			Certificate cert = keyStore.getCertificate(commonName);
+			if (cert == null){
+				return false;
+			}else{
+				return true;
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (CertificateException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 	public static int numberOfCertificates(){
 		KeyStoreMenager ksMenager = new KeyStoreMenager();
@@ -184,6 +222,7 @@ public class KeyStoreMenager {
 		}
 		return numOfCerts;
 	}
+	
 	
 
 	public static void main(String[] args) throws ParseException{

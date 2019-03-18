@@ -95,22 +95,22 @@ public class CertificateUtils {
 		
 		Map<Integer, X509Certificate > map = new HashMap<Integer, X509Certificate>();
 		int num = 1;
-		while(aliasesNum.hasMoreElements()){
-			
+		while(aliasesNum.hasMoreElements()){	
 			String alias = aliasesNum.nextElement();
 			X509Certificate cert =	ksMenager.readCertificate("certificates", "123", alias);
 			System.out.println(num + ".    Subject name: " + cert.getSubjectX500Principal().getName());
 			System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
 			map.put(num, cert);
 			num++;
-
 		}
 		int opt = 0;
 		do{
 			System.out.print("Izaberite izdavaoca sertifikata: ");
 			opt = sc.nextInt();
+
 		}while(opt < 0 || opt > num);
 		X509Certificate issuer = map.get(opt);
+
 		//preko imena izdavaoca pronalazimo private key
 		X500Name x500name = null;
 		try {
@@ -120,15 +120,45 @@ public class CertificateUtils {
 			e.printStackTrace();
 		}
 		RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-
 		String commonName = IETFUtils.valueToString(cn.getFirst().getValue());
-		PrivateKey issuerPK = ksMenager.getKey(commonName, commonName);
+		
+		PrivateKey issuerPK = ksMenager.getKey(commonName, commonName, "certificates", "123");
 		return new IssuerData(issuerPK, x500name);
 		
 	}
+	public static X509Certificate ChoseCert(Scanner sc){
+		KeyStoreMenager ksMenager = new KeyStoreMenager();
+		ksMenager.loadKeySotre("certificates","123");
+		Enumeration<String> aliasesNum = null;
+		
+		aliasesNum = ksMenager.aliases();
+		
+		Map<Integer, X509Certificate > map = new HashMap<Integer, X509Certificate>();
+		int num = 1;
+		while(aliasesNum.hasMoreElements()){	
+			String alias = aliasesNum.nextElement();
+			X509Certificate cert =	ksMenager.readCertificate("certificates", "123", alias);
+			System.out.println(num + ".    Subject name: " + cert.getSubjectX500Principal().getName());
+			System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
+			map.put(num, cert);
+			num++;
+		}
+		int opt = 0;
+		do{
+			System.out.print("Izaberite izdavaoca sertifikata: ");
+			opt = sc.nextInt();
+		}
+		while(opt < 0 || opt > num);
+		return map.get(opt);
+	}
 	public static boolean verifyCertChain(Certificate[] certChain){
+		KeyStoreMenager ksMenager = new KeyStoreMenager();
 		if (certChain.length == 1){
 			try {
+				if (ksMenager.isRevoked((X509Certificate)certChain[0])){
+					System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+					return false;
+				}
 				certChain[0].verify(certChain[0].getPublicKey());
 				return true;
 			} catch (InvalidKeyException e) {
@@ -146,6 +176,11 @@ public class CertificateUtils {
 		}
 		for (int i = 0; i < certChain.length -1; i++){
 			Certificate subject = certChain[i];
+			//proverava da li je sertifikat povucen
+			if (ksMenager.isRevoked((X509Certificate)subject)){
+				System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+				return false;
+			}
 			Certificate issuer = certChain[i + 1];
 			try {
 				subject.verify(issuer.getPublicKey());
@@ -163,6 +198,10 @@ public class CertificateUtils {
 		}
 		//na kraju root proverava samog sebe
 		try {
+			if (ksMenager.isRevoked((X509Certificate)certChain[certChain.length-1])){
+				System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+				return false;
+			}
 			certChain[certChain.length-1].verify(certChain[certChain.length-1].getPublicKey());
 		} catch (InvalidKeyException e) {
 			return false;

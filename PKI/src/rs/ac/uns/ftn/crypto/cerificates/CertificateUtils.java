@@ -11,6 +11,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -107,6 +108,7 @@ public class CertificateUtils {
 		do{
 			System.out.print("Izaberite izdavaoca sertifikata: ");
 			opt = sc.nextInt();
+			sc.nextLine();
 
 		}while(opt < 0 || opt > num);
 		X509Certificate issuer = map.get(opt);
@@ -147,6 +149,7 @@ public class CertificateUtils {
 		do{
 			System.out.print("Izaberite izdavaoca sertifikata: ");
 			opt = sc.nextInt();
+			sc.nextLine();
 		}
 		while(opt < 0 || opt > num);
 		return map.get(opt);
@@ -160,7 +163,11 @@ public class CertificateUtils {
 					return false;
 				}
 				certChain[0].verify(certChain[0].getPublicKey());
+				((X509Certificate)certChain[0]).checkValidity();
 				return true;
+			}catch(CertificateExpiredException e){
+				System.out.println("Sertifikat izabranog izdavaoca je istekao.");
+				return false;
 			} catch (InvalidKeyException e) {
 				return false;
 			} catch (CertificateException e) {
@@ -176,6 +183,8 @@ public class CertificateUtils {
 		}
 		for (int i = 0; i < certChain.length -1; i++){
 			Certificate subject = certChain[i];
+			subject = (X509Certificate) subject;
+			
 			//proverava da li je sertifikat povucen
 			if (ksMenager.isRevoked((X509Certificate)subject)){
 				System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
@@ -184,6 +193,10 @@ public class CertificateUtils {
 			Certificate issuer = certChain[i + 1];
 			try {
 				subject.verify(issuer.getPublicKey());
+				((X509Certificate)subject).checkValidity();
+			}catch(CertificateExpiredException e){
+				System.out.println("Sertifikat izabranog izdavaoca je istekao.");
+				return false;
 			} catch (InvalidKeyException e) {
 				return false;
 			} catch (CertificateException e) {
@@ -203,6 +216,10 @@ public class CertificateUtils {
 				return false;
 			}
 			certChain[certChain.length-1].verify(certChain[certChain.length-1].getPublicKey());
+			((X509Certificate)certChain[certChain.length-1]).checkValidity();
+		}catch(CertificateExpiredException e){
+			System.out.println("Sertifikat izabranog izdavaoca je istekao.");
+			return false;
 		} catch (InvalidKeyException e) {
 			return false;
 		} catch (CertificateException e) {

@@ -45,6 +45,7 @@ public class App {
 		do {
 			menu();
 			choice = keyboard.nextInt();
+			keyboard.nextLine();
 			switch(choice) {
 			case 1: {
 				PKI.addNewCertificate(sc);
@@ -72,6 +73,7 @@ public class App {
 	}
 	public void addNewCertificate(Scanner sc){
 		//ksMenager.createKeyStore("revokedCertificates","123");
+		
 		ksMenager.loadKeySotre("certificates", "123");
 		try {
 			ksMenager.generateCertificates();

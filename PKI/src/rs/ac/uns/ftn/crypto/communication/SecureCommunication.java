@@ -18,6 +18,7 @@ import javax.crypto.KeyGenerator;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import rs.ac.uns.ftn.crypto.communication.Decryp;
 
 
 public class SecureCommunication {
@@ -61,17 +62,41 @@ public class SecureCommunication {
 		return pair;
 	}
 	
-	private byte[] encrypt(String plainText, PublicKey publicKey) {
+	private byte[] encrypt(File originalKeyFile, File encryptedKeyFile, File originalFile, File encryptedFile) {
 		//TODO: Sifrovati otvoren tekst uz pomoc kombinacije simetricne i asimetricne sifre koju diktira najbolja praksa
+		new EncryptData(originalFile, encryptedFile, 
+                secretSymmetricKey);
+
+		//obtain the ecrypted and pass it to rsa down
+		new EncryptKey(publicKey, 
+                originalKeyFile, encryptedKeyFile);
+		//whole message bind together and prepare for sending
 		return null;
 	}
 	
-	private byte[] decrypt(byte[] cipherText, SecretKey key) {
+	private byte[] decrypt(File encryptedKeyReceived, File decreptedKeyFile, File encryptedFileReceived, File decryptedFile) {
 		//TODO: Desifrovati sifrat uz pomoc kombinacije simetricne i asimetricne sifre koju diktira najbolja praksa
-		
-		
-		return null;
+		DecryptKey dk = new DecryptKey(privateKey,
+                encryptedKeyReceived, decreptedKeyFile);
+
+		new DecryptData(encryptedFileReceived, decryptedFile, 
+                dk.getSecretKey);
+
+		return null;//return decrypted dataaaaa
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	private byte[] sign(byte[] data, PrivateKey privateKey) {
 		//TODO: Izvrsiti digitalno potpisivanje prateci najbolje prakse

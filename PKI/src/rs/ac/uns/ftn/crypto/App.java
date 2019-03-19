@@ -29,18 +29,22 @@ import rs.ac.uns.ftn.crypto.data.SubjectData;
 import rs.ac.uns.ftn.crypto.keystore.KeyStoreMenager;
 
 public class App {
+	
 	private static final String REVOKE_FILE = "revokedCertificates";
 	private static final String REVOKE_FILE_PASS = "123";
 	private KeyStoreMenager ksMenager;
 	public App(){
 		ksMenager = new KeyStoreMenager();
 	}
+	
 	public static void main(String[] args) throws CertificateEncodingException{
+		
 		Security.addProvider(new BouncyCastleProvider());
 		Scanner sc = new Scanner(System.in);
-		System.out.println("===== Konzolna aplikacija za upravljanje sertifikatima i kljucevima =====");
+		System.out.println("===== Console application for certificates management =====");
 		Scanner keyboard = new Scanner(System.in);
 		App PKI = new App();
+		
 		int choice = 0;
 		do {
 			menu();
@@ -93,7 +97,7 @@ public class App {
 		
 		//pre dodavanja sertifikata prvo se proverava validnost svih sertifikata u lancu sertifikata
 		Certificate[] certChainIssuer = ksMenager.getCertificateChain(cnIssuer);
-		System.out.println("Proverava se validnost sertifikata izdavaoca... ");
+		System.out.println("Checking issuer certificate in process... ");
 		if (CertificateUtils.verifyCertChain(certChainIssuer)){
 			//generisi nov sertifikat
 			Certificate cert = cg.generateCertificate(sd, id);
@@ -102,9 +106,9 @@ public class App {
 			System.arraycopy(certChainIssuer, 0, certChainSubject, 1, certChainIssuer.length);
 			certChainSubject[0] = cert;
 			ksMenager.addCertificate(cnSubject, sd.getPrivateKey(),  cnSubject.toCharArray(), certChainSubject, "certificates", "123");
-			System.out.println("Sertifikat uspesno dodat.");
+			System.out.println("Certificate successfuly added.");
 		}else{
-			System.out.println("neuspesno dodavanje sertifikata.");
+			System.out.println("Certificate not added successfully.");
 		}
 	}
 	public void showKeyStoreContent(String fileName, String password){
@@ -128,6 +132,17 @@ public class App {
 	public void revokeCertificate(Scanner sc) throws CertificateEncodingException{
 		ksMenager.loadKeySotre("certificates", "123");
 		X509Certificate certToRevoke = CertificateUtils.ChoseCert(sc);
+		
+		System.out.print("Choose the cause of certificate revocation: ");
+		revocationReasons();
+		int opt = 0;
+		do{
+			opt = sc.nextInt();
+		}
+		while(opt < 1 || opt > 5);
+		
+		//TODO: write revocing certificate serial num and reason to file
+		
 		Enumeration<String> aliasesNum = ksMenager.aliases();
 		ArrayList<X509Certificate> certsToRevoke = new ArrayList<>();
 		while(aliasesNum.hasMoreElements()){
@@ -156,11 +171,20 @@ public class App {
 	}
 	private static void menu() {
 		System.out.println("========================================");
-		System.out.println("1.	Dodaj nov sertifikat");
-		System.out.println("2.	Povuci sertifikat");
-		System.out.println("3.	Prikazi sve sertifikate");
-		System.out.println("4.	Prikazi povucene sertifikate");
+		System.out.println("1.	Issue new certificate");
+		System.out.println("2.	Revoke certificate");
+		System.out.println("3.	Show all certificates");
+		System.out.println("4.	Show all revoked certificates");
 		System.out.println("5.	Exit");
+		System.out.print(">>>");
+	}
+	private static void revocationReasons() {
+		System.out.println("========================================");
+		System.out.println("1.	Certificate is no longer used");
+		System.out.println("2.	Details of certificate are changed");
+		System.out.println("3.	The certificate owner's private key was compromised or lost");
+		System.out.println("4.	Certificates were stolen from CA");
+		System.out.println("5.	Other");
 		System.out.print(">>>");
 	}
 }

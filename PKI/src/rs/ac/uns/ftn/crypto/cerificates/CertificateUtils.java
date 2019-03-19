@@ -42,17 +42,17 @@ public class CertificateUtils {
 			String startDateStr = "";
 			String endDateStr = "";
 			
-			System.out.print("Unesite ime softvera kome se izdaje sertifikat: ");
+			System.out.print("Enter the software name that the certificate is issued to: ");
 			subjectName = sc.nextLine();
-			System.out.print("Unesite ime organizacije: ");
+			System.out.print("Enter organization name: ");
 			organization = sc.nextLine();
-			System.out.print("Unesite ime organizacione jedinice: ");
+			System.out.print("Enter organization unit name: ");
 			organizationUnit = sc.nextLine();
-			System.out.print("Unesite oznaku drzave: ");
+			System.out.print("Enter country code: ");
 			countryCode = sc.nextLine();
-			System.out.print("Unesite pocetni datum vazenja sertifikata u formatu (yyyy-MM-dd): ");
+			System.out.print("Certificate valid from: [format : yyyy-MM-dd] ");
 			startDateStr = sc.nextLine();
-			System.out.print("Unesite datum isteka vazenja sertifikata u formatu (yyyy-MM-dd): ");
+			System.out.print("Certificate valid to: [format : yyyy-MM-dd] ");
 			endDateStr = sc.nextLine();
 
 			SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
@@ -99,13 +99,13 @@ public class CertificateUtils {
 			String alias = aliasesNum.nextElement();
 			X509Certificate cert =	ksMenager.readCertificate("certificates", "123", alias);
 			System.out.println(num + ".    Subject name: " + cert.getSubjectX500Principal().getName());
-			System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
+			//System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
 			map.put(num, cert);
 			num++;
 		}
 		int opt = 0;
 		do{
-			System.out.print("Izaberite izdavaoca sertifikata: ");
+			System.out.print("Choose certificate issuer: ");
 			opt = sc.nextInt();
 
 		}while(opt < 0 || opt > num);
@@ -145,7 +145,7 @@ public class CertificateUtils {
 		}
 		int opt = 0;
 		do{
-			System.out.print("Izaberite izdavaoca sertifikata: ");
+			System.out.print("Choose the certificate to revoke: ");
 			opt = sc.nextInt();
 		}
 		while(opt < 0 || opt > num);
@@ -156,7 +156,7 @@ public class CertificateUtils {
 		if (certChain.length == 1){
 			try {
 				if (ksMenager.isRevoked((X509Certificate)certChain[0])){
-					System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+					System.out.println("Chosen issuer certificate has been revoked.");
 					return false;
 				}
 				certChain[0].verify(certChain[0].getPublicKey());
@@ -178,7 +178,7 @@ public class CertificateUtils {
 			Certificate subject = certChain[i];
 			//proverava da li je sertifikat povucen
 			if (ksMenager.isRevoked((X509Certificate)subject)){
-				System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+				System.out.println("Chosen issuer certificate has been revoked.");
 				return false;
 			}
 			Certificate issuer = certChain[i + 1];
@@ -199,7 +199,7 @@ public class CertificateUtils {
 		//na kraju root proverava samog sebe
 		try {
 			if (ksMenager.isRevoked((X509Certificate)certChain[certChain.length-1])){
-				System.out.println("Izabrani izdavaoc sertifikata je povucen iz upotrebe, niste uspeli da dodate nov sertifikat.");
+				System.out.println("Chosen issuer certificate has been revoked.");
 				return false;
 			}
 			certChain[certChain.length-1].verify(certChain[certChain.length-1].getPublicKey());

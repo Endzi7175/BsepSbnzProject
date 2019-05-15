@@ -77,8 +77,9 @@ public class App {
 	}
 	public void addNewCertificate(Scanner sc){
 		//ksMenager.createKeyStore("revokedCertificates","123");
+		ksMenager.createKeyStore("root", "123");
+		ksMenager.loadKeySotre("root", "123");
 		
-		ksMenager.loadKeySotre("certificates", "123");
 		try {
 			ksMenager.generateCertificates();
 		} catch (ParseException e) {
@@ -105,7 +106,7 @@ public class App {
 			Certificate[] certChainSubject = new Certificate[certChainIssuer.length + 1];
 			System.arraycopy(certChainIssuer, 0, certChainSubject, 1, certChainIssuer.length);
 			certChainSubject[0] = cert;
-			ksMenager.addCertificate(cnSubject, sd.getPrivateKey(),  cnSubject.toCharArray(), certChainSubject, "certificates", "123");
+			ksMenager.addCertificate(cnSubject, sd.getPrivateKey(),  cnSubject.toCharArray(), certChainSubject, "client", "client");
 			System.out.println("Certificate successfuly added.");
 		}else{
 			System.out.println("Certificate not added successfully.");

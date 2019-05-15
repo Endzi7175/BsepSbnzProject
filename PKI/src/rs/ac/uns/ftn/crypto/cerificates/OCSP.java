@@ -21,36 +21,30 @@
    21    * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
    22    * or visit www.oracle.com if you need additional information or have any
    23    * questions.
-   24    */
+   24    
    25   package sun.security.provider.certpath;
    26   
-   27   import java.io.InputStream;
-   28   import java.io.IOException;
-   29   import java.io.OutputStream;
-   30   import java.net.URI;
-   31   import java.net.URL;
-   32   import java.net.HttpURLConnection;
-   33   import java.security.cert.CertificateException;
-   34   import java.security.cert.CertPathValidatorException;
-   35   import java.security.cert.CRLReason;
-   36   import java.security.cert.Extension;
-   37   import java.security.cert.X509Certificate;
-   38   import java.util.Arrays;
-   39   import java.util.Collections;
-   40   import java.util.Date;
-   41   import java.util.List;
-   42   import java.util.Map;
-   43   
-   44   import static sun.security.provider.certpath.OCSPResponse.*;
-   45   import sun.security.util.Debug;
-   46   import sun.security.x509.AccessDescription;
-   47   import sun.security.x509.AuthorityInfoAccessExtension;
-   48   import sun.security.x509.GeneralName;
-   49   import sun.security.x509.GeneralNameInterface;
-   50   import sun.security.x509.URIName;
-   51   import sun.security.x509.X509CertImpl;
-   52   
-   53   /**
+   27   import java.net.URI;
+import java.security.cert.CRLReason;
+import java.security.cert.CertificateException;
+import java.security.cert.Extension;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.bouncycastle.asn1.crmf.CertId;
+import org.bouncycastle.asn1.ocsp.OCSPResponse;
+
+import sun.security.util.Debug;
+import sun.security.x509.AccessDescription;
+import sun.security.x509.AuthorityInfoAccessExtension;
+import sun.security.x509.GeneralName;
+import sun.security.x509.GeneralNameInterface;
+import sun.security.x509.URIName;
+import sun.security.x509.X509CertImpl;
+      
+      *//**
    54    * This is a class that checks the revocation status of a certificate(s) using
    55    * OCSP. It is not a PKIXCertPathChecker and therefore can be used outside of
    56    * the CertPathValidator framework. It is useful when you want to
@@ -59,7 +53,7 @@
    59    * associated certificate chain.
    60    *
    61    * @author Sean Mullan
-   62    */
+   62    *//*
    63   public final class OCSP {
    64   
    65       private static final Debug debug = Debug.getInstance("certpath");
@@ -68,7 +62,7 @@
    68   
    69       private OCSP() {}
    70   
-   71       /**
+   71       *//**
    72        * Obtains the revocation status of a certificate using OCSP using the most
    73        * common defaults. The OCSP responder URI is retrieved from the
    74        * certificate's AIA extension. The OCSP responder certificate is assumed
@@ -81,7 +75,7 @@
    81        *    communicating with the OCSP responder
    82        * @throws CertPathValidatorException if an exception occurs while
    83        *    encoding the OCSP Request or validating the OCSP Response
-   84        */
+   84        *//*
    85       public static RevocationStatus check(X509Certificate cert,
    86           X509Certificate issuerCert)
    87           throws IOException, CertPathValidatorException {
@@ -107,7 +101,7 @@
   107           return (RevocationStatus) ocspResponse.getSingleResponse(certId);
   108       }
   109   
-  110       /**
+  110       *//**
   111        * Obtains the revocation status of a certificate using OCSP.
   112        *
   113        * @param cert the certificate to be checked
@@ -121,7 +115,7 @@
   121        *    communicating with the OCSP responder
   122        * @throws CertPathValidatorException if an exception occurs while
   123        *    encoding the OCSP Request or validating the OCSP Response
-  124        */
+  124        *//*
   125       public static RevocationStatus check(X509Certificate cert,
   126           X509Certificate issuerCert, URI responderURI, X509Certificate
   127           responderCert, Date date)
@@ -142,7 +136,7 @@
   142           return (RevocationStatus) ocspResponse.getSingleResponse(certId);
   143       }
   144   
-  145       /**
+  145       *//**
   146        * Checks the revocation status of a list of certificates using OCSP.
   147        *
   148        * @param certs the CertIds to be checked
@@ -155,7 +149,7 @@
   155        *    communicating with the OCSP responder
   156        * @throws CertPathValidatorException if an exception occurs while
   157        *    encoding the OCSP Request or validating the OCSP Response
-  158        */
+  158        *//*
   159       static OCSPResponse check(List<CertId> certIds, URI responderURI,
   160           X509Certificate responderCert, Date date)
   161           throws IOException, CertPathValidatorException {
@@ -263,14 +257,14 @@
   263           return ocspResponse;
   264       }
   265   
-  266       /**
+  266       *//**
   267        * Returns the URI of the OCSP Responder as specified in the
   268        * certificate's Authority Information Access extension, or null if
   269        * not specified.
   270        *
   271        * @param cert the certificate
   272        * @return the URI of the OCSP Responder, or null if not specified
-  273        */
+  273        *//*
   274       public static URI getResponderURI(X509Certificate cert) {
   275           try {
   276               return getResponderURI(X509CertImpl.toImpl(cert));
@@ -304,30 +298,30 @@
   304           return null;
   305       }
   306   
-  307       /**
+  307       *//**
   308        * The Revocation Status of a certificate.
-  309        */
+  309        *//*
   310       public static interface RevocationStatus {
   311           public enum CertStatus { GOOD, REVOKED, UNKNOWN };
   312   
-  313           /**
+  313           *//**
   314            * Returns the revocation status.
-  315            */
+  315            *//*
   316           CertStatus getCertStatus();
-  317           /**
+  317           *//**
   318            * Returns the time when the certificate was revoked, or null
   319            * if it has not been revoked.
-  320            */
+  320            *//*
   321           Date getRevocationTime();
-  322           /**
+  322           *//**
   323            * Returns the reason the certificate was revoked, or null if it
   324            * has not been revoked.
-  325            */
+  325            *//*
   326           CRLReason getRevocationReason();
   327   
-  328           /**
+  328           *//**
   329            * Returns a Map of additional extensions.
-  330            */
+  330            *//*
   331           Map<String, Extension> getSingleExtensions();
   332       }
-  333   }
+  333   }*/

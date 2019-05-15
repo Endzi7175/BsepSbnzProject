@@ -1,0 +1,13 @@
+{
+  "id": 0,
+  "batchTime": 0,
+  "watchDirectiories": [
+    "/home/f.micic/faks/LogSimulator"
+  ],
+  "regex": {
+    "/home/f.micic/faks/LogSimulator/(.*)\\.log": {
+      "id": 0,
+      "regex": []
+    }
+  }
+}

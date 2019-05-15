@@ -1,0 +1,10 @@
+[
+  {
+    "path": "/home/f.micic/faks/LogSimulator/normal.log",
+    "lastLine": "05-15 17:46:53.866|User918|128.125.148.85|S|M|Izmena profila|1"
+  },
+  {
+    "path": "/home/f.micic/faks/LogSimulator/attack.log",
+    "lastLine": "05-15 17:42:54.186|User553|176.193.170.120|E|H|Greska u programu|1"
+  }
+]

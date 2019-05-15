@@ -1,24 +1,22 @@
-package rs.ac.uns.ftn.crypto.communication;
+/*package rs.ac.uns.ftn.crypto.communication;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.InvalidKeyException;
+import java.io.File;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
-import javax.crypto.SecretKey;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import rs.ac.uns.ftn.crypto.communication.Decryp;
+//import com.sun.java.util.jar.pack.Package.File;
 
 
 public class SecureCommunication {
@@ -37,8 +35,24 @@ public class SecureCommunication {
 		pairAsymmetric = generateKeyPair();
 		privateKey = pairAsymmetric.getPrivate();
 		publicKey = pairAsymmetric.getPublic();
-		symmCipher = Cipher.getInstance("AES");
-		asymmCipher = Cipher.getInstance("RSA");
+		try {
+			symmCipher = Cipher.getInstance("AES");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			asymmCipher = Cipher.getInstance("RSA");
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 				
 	}
 	
@@ -109,3 +123,4 @@ public class SecureCommunication {
 	}
 
 }
+*/

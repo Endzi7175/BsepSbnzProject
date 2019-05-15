@@ -89,7 +89,7 @@ public class CertificateUtils {
 	}
 	public static IssuerData choseCertIssuer(Scanner sc){
 		KeyStoreMenager ksMenager = new KeyStoreMenager();
-		ksMenager.loadKeySotre("certificates","123");
+		ksMenager.loadKeySotre("root","123");
 		Enumeration<String> aliasesNum = null;
 		
 		aliasesNum = ksMenager.aliases();
@@ -98,7 +98,7 @@ public class CertificateUtils {
 		int num = 1;
 		while(aliasesNum.hasMoreElements()){	
 			String alias = aliasesNum.nextElement();
-			X509Certificate cert =	ksMenager.readCertificate("certificates", "123", alias);
+			X509Certificate cert =	ksMenager.readCertificate("root", "123", alias);
 			System.out.println(num + ".    Subject name: " + cert.getSubjectX500Principal().getName());
 			//System.out.println("      Issuer name: " + cert.getIssuerX500Principal().getName());
 			map.put(num, cert);
@@ -124,7 +124,7 @@ public class CertificateUtils {
 		RDN cn = x500name.getRDNs(BCStyle.CN)[0];
 		String commonName = IETFUtils.valueToString(cn.getFirst().getValue());
 		
-		PrivateKey issuerPK = ksMenager.getKey(commonName, commonName, "certificates", "123");
+		PrivateKey issuerPK = ksMenager.getKey(commonName, commonName, "root", "123");
 		return new IssuerData(issuerPK, x500name);
 		
 	}

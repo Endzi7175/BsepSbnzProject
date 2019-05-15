@@ -76,6 +76,7 @@ public class KeyStoreMenager {
 	}
 	public void addCertificate(String alias, PrivateKey privateKey, char[] password, Certificate[] certChain, String keyStoreName, String keyStorePass){
 		try {
+			createKeyStore("client", "client");
 			keyStore.load(new FileInputStream("files/" + keyStoreName + ".jks"), keyStorePass.toCharArray());
 			//dodaj sertifikat
 			keyStore.setKeyEntry(alias, privateKey, password, certChain);
@@ -136,7 +137,6 @@ public class KeyStoreMenager {
 		//klasa X500NameBuilder pravi X500Name objekat koji predstavlja podatke o vlasniku
 		X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
 	    builder.addRDN(BCStyle.CN, "MegaTravelRoot");
-
 	    builder.addRDN(BCStyle.O, "Travel Agency");
 	    builder.addRDN(BCStyle.OU, "root");
 	    builder.addRDN(BCStyle.C, "RS");
@@ -146,7 +146,7 @@ public class KeyStoreMenager {
 	    CertificateGenerator cg = new CertificateGenerator();
 	    
 	    Certificate cert = cg.generateCertificate(sd, id);
-	    addCertificate("MegaTravelRoot", keyPairSubject.getPrivate(), new String("MegaTravelRoot").toCharArray(), new Certificate[]{cert}, "certificates", "123");
+	    addCertificate("MegaTravelRoot", keyPairSubject.getPrivate(), new String("123").toCharArray(), new Certificate[]{cert}, "root", "123");
 	    
 	}
 	public Enumeration<String> aliases(){
@@ -208,7 +208,7 @@ public class KeyStoreMenager {
 	}
 	public static int numberOfCertificates(){
 		KeyStoreMenager ksMenager = new KeyStoreMenager();
-		ksMenager.loadKeySotre("certificates","123");
+		ksMenager.loadKeySotre("root","123");
 		int numOfCerts = 0;
 		Enumeration<String> certs = null;
 		try {
